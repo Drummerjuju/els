@@ -187,6 +187,7 @@ if(!rows.length) return;
 
 let lights=rows.map(r=>{
 const type = r.querySelector('input.type')?.value || "point";
+const dir = r.querySelector('input.dir')?.value || "dir";
 const rot = parseVector3(r.querySelector('input.rot')?.value || "vector3(0,0,0)");
 const off = parseVector3(r.querySelector('input.off')?.value || "vector3(0,0,0)");
 const hex = r.querySelector('input.color')?.value || "#0000ff";
