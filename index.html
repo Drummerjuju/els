@@ -17,7 +17,7 @@ label{display:block;margin-top:10px;font-size:13px}
 input,select,textarea,button{
 width:100%;margin-top:6px;padding:10px;border-radius:10px;
 border:1px solid #1e293b;background:#020617;color:#e5e7eb}
-textarea{height:700px;font-family:ui-monospace,monospace}
+textarea{height:720px;font-family:ui-monospace,monospace}
 .row{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
 .row>*{flex:1}
 button{font-weight:600;cursor:pointer}
@@ -49,47 +49,15 @@ button{font-weight:600;cursor:pointer}
 <label>NoFlash<select id="noflash"><option>true</option><option>false</option></select></label>
 </div>
 
-<!-- LIGHT -->
-<div class="panel">
-<div id="light"></div>
-<button class="add" onclick="addExtra(light)">+ Extra</button>
-</div>
+<!-- LIGHT / FRONT / REAR -->
+<div class="panel"><div id="light"></div><button class="add" onclick="addExtra(light)">+ Extra</button></div>
+<div class="panel"><div id="front"></div><button class="add" onclick="addExtra(front)">+ Extra</button></div>
+<div class="panel"><div id="rear"></div><button class="add" onclick="addExtra(rear)">+ Extra</button></div>
 
-<!-- FRONT -->
-<div class="panel">
-<div id="front"></div>
-<button class="add" onclick="addExtra(front)">+ Extra</button>
-</div>
-
-<!-- REAR -->
-<div class="panel">
-<div id="rear"></div>
-<button class="add" onclick="addExtra(rear)">+ Extra</button>
-</div>
-
-<!-- UMFELD (sceneExtras – KEINE Muster) -->
+<!-- UMFELD -->
 <div class="panel">
 <div id="scene"></div>
 <button class="add" onclick="addScene()">+ Umfeld Extra</button>
-</div>
-
-<!-- SIRENEN -->
-<div class="panel">
-<div id="sirens"></div>
-<button class="add" onclick="addSiren()">+ Sirene</button>
-
-<label>Offset</label>
-<div class="row">
-<input id="sx" value="0.0">
-<input id="sy" value="3.5">
-<input id="sz" value="0.5">
-</div>
-
-<label>Directional<select id="sdir"><option>true</option><option>false</option></select></label>
-<label>Quiet Zone<select id="squiet"><option>back</option><option>front</option><option>left</option><option>right</option></select></label>
-<label>Range<input id="srange" value="500.0"></label>
-<label>Traffic Clear<select id="traffic"><option>true</option><option>false</option></select></label>
-<label>Megaphone<select id="mega"><option>true</option><option>false</option></select></label>
 </div>
 
 <!-- ENVLIGHTS -->
@@ -104,8 +72,12 @@ button{font-weight:600;cursor:pointer}
 </div>
 
 <script>
-const patterns=["double","double_inv","tree","tree_inv","rapid","single","steady","wigwag_a","wigwag_b","matrix","matrix_inv"];
-const sirenList=["SIREN_ALPHA","SIREN_BRAVO","SIREN_CHARLIE","SIREN_DELTA"];
+const patterns=[
+"double","double_inv","rapid","single","steady","wigwag_a","wigwag_b",
+"v47_double_A","v47_double_B","v47_double_C",
+"matrix1","matrix2","tree","tree_inv",
+"heck_hyper","heck_rapid","heck_aggro_a","heck_aggro_b"
+];
 
 function tab(i){
 document.querySelectorAll('.tab').forEach((t,n)=>t.classList.toggle('active',n===i));
@@ -130,19 +102,15 @@ r.innerHTML=`<input class="sid" placeholder="Extra ID"><button class="remove" on
 scene.appendChild(r);
 }
 
-function addSiren(){
-const r=document.createElement('div');
-r.className='row';
-r.innerHTML=`<select>${sirenList.map(s=>`<option>${s}</option>`).join('')}</select><button class="remove" onclick="this.parentNode.remove()">X</button>`;
-sirens.appendChild(r);
-}
-
-/* ENVLIGHTS */
+/* ===== ENVLIGHTS ===== */
 function addEnvGroup(){
 const g=document.createElement('div');
 g.className='card';
 g.style.marginTop='10px';
-g.innerHTML=`<label>Extra ID<input class="eid"></label><div class="elist"></div><button class="add">+ EnvLight</button>`;
+g.innerHTML=`
+<label>Extra ID<input class="eid"></label>
+<div class="elist"></div>
+<button class="add">+ EnvLight</button>`;
 g.querySelector('.add').onclick=()=>addEnv(g.querySelector('.elist'));
 env.appendChild(g);
 }
@@ -156,9 +124,7 @@ r.innerHTML=`
 <input placeholder="rotX" value="0.0">
 <input placeholder="rotY" value="0.0">
 <input placeholder="rotZ" value="0.0">
-<input placeholder="offX" value="1.0">
-<input placeholder="offY" value="1.0">
-<input placeholder="offZ" value="1.0">
+<input placeholder="offset (x,y,z)" value="1.0,1.0,1.0">
 <input type="color" value="#0000ff">
 <input placeholder="range" value="25.0">
 <input placeholder="intensity" value="2.5">
@@ -166,7 +132,11 @@ r.innerHTML=`
 c.appendChild(r);
 }
 
-/* BUILDERS */
+function vec3(str){
+const v=str.split(',').map(x=>x.trim());
+return `{ x=${v[0]||0}, y=${v[1]||0}, z=${v[2]||0} }`;
+}
+
 function buildExtras(c){
 let o=[];
 [...c.children].forEach(r=>{
@@ -183,8 +153,7 @@ function buildSceneExtras(){
 let o=[];
 [...scene.children].forEach(r=>{
 const id=r.querySelector('.sid').value;
-if(!id)return;
-o.push(`        [${id}] = true,`);
+if(id) o.push(`        [${id}] = true,`);
 });
 return o.join("\n");
 }
@@ -197,18 +166,18 @@ if(!eid)return;
 const rows=[...g.querySelector('.elist').children];
 let lights=rows.map(r=>{
 const i=r.querySelectorAll('input');
-const hex=i[8].value;
+const hex=i[6].value;
 const R=parseInt(hex.substr(1,2),16);
 const G=parseInt(hex.substr(3,2),16);
 const B=parseInt(hex.substr(5,2),16);
 return `{
-                type="${i[0].value}",
-                dir="${i[1].value}",
-                rotation={x=${i[2].value},y=${i[3].value},z=${i[4].value}},
-                offset={x=${i[5].value},y=${i[6].value},z=${i[7].value}},
-                color={r=${R},g=${G},b=${B}},
-                range=${i[9].value},
-                intensity=${i[10].value}
+                type = "${i[0].value}",
+                dir = "${i[1].value}",
+                rotation = { x=${i[2].value}, y=${i[3].value}, z=${i[4].value} },
+                offset = ${vec3(i[5].value)},
+                color = { r=${R}, g=${G}, b=${B} },
+                range = ${i[7].value},
+                intensity = ${i[8].value}
             }`;
 });
 o.push(`        [${eid}] = {\n${lights.join(',\n')}\n        },`);
@@ -235,21 +204,9 @@ ${buildExtras(front)}
 ${buildExtras(rear)}
     },
 
-    -- UMFELDBELEUCHTUNG (keine Blitzmuster)
     sceneExtras = {
 ${buildSceneExtras()}
     },
-
-    wmTones = {
-${[...sirens.children].map((r,i)=>`        [${i+1}] = "${r.querySelector('select').value}"`).join(',\n')}
-    },
-
-    sirenOffset = { x=${sx.value}, y=${sy.value}, z=${sz.value} },
-    sirenDirectional = ${sdir.value},
-    sirenQuietZone = "${squiet.value}",
-    sirenRange = ${srange.value},
-    allowTrafficClear = ${traffic.value},
-    hasMegaphone = ${mega.value},
 
     envLights = {
 ${buildEnvLights()}
