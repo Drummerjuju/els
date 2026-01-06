@@ -18,7 +18,7 @@ input,select,textarea,button{
 width:100%;margin-top:6px;padding:10px;border-radius:10px;
 border:1px solid #1e293b;background:#020617;color:#e5e7eb}
 textarea{height:720px;font-family:ui-monospace,monospace}
-.row{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
+.row{display:flex;gap:6px;margin-top:6px}
 .row>*{flex:1}
 button{font-weight:600;cursor:pointer}
 .add{background:#22c55e;color:#022c22}
@@ -36,34 +36,46 @@ button{font-weight:600;cursor:pointer}
 <div class="tab" onclick="tab(2)">Front</div>
 <div class="tab" onclick="tab(3)">Rear</div>
 <div class="tab" onclick="tab(4)">Umfeld</div>
-<div class="tab" onclick="tab(5)">Sirenen</div>
-<div class="tab" onclick="tab(6)">EnvLights</div>
+<div class="tab" onclick="tab(5)">EnvLights</div>
 </div>
 
 <div class="card">
 
-<!-- ALLGEMEIN -->
+<!-- Allgemein -->
 <div class="panel active">
-<label>Spawnname<input id="vehicle" value="yourvehicle"></label>
-<label>Layout<input id="layout" value="Default"></label>
+<label>Spawnname<input id="vehicle"></label>
+<label>Layout<input id="layout"></label>
 <label>NoFlash<select id="noflash"><option>true</option><option>false</option></select></label>
 </div>
 
-<!-- LIGHT / FRONT / REAR -->
-<div class="panel"><div id="light"></div><button class="add" onclick="addExtra(light)">+ Extra</button></div>
-<div class="panel"><div id="front"></div><button class="add" onclick="addExtra(front)">+ Extra</button></div>
-<div class="panel"><div id="rear"></div><button class="add" onclick="addExtra(rear)">+ Extra</button></div>
-
-<!-- UMFELD -->
+<!-- Light -->
 <div class="panel">
-<div id="scene"></div>
-<button class="add" onclick="addScene()">+ Umfeld Extra</button>
+<div id="light"></div>
+<button class="add" onclick="addExtra(light)">+ Extra</button>
 </div>
 
-<!-- ENVLIGHTS -->
+<!-- Front -->
+<div class="panel">
+<div id="front"></div>
+<button class="add" onclick="addExtra(front)">+ Extra</button>
+</div>
+
+<!-- Rear -->
+<div class="panel">
+<div id="rear"></div>
+<button class="add" onclick="addExtra(rear)">+ Extra</button>
+</div>
+
+<!-- Umfeld -->
+<div class="panel">
+<div id="scene"></div>
+<button class="add" onclick="addScene()">+ Extra</button>
+</div>
+
+<!-- EnvLights -->
 <div class="panel">
 <div id="env"></div>
-<button class="add" onclick="addEnvGroup()">+ Env Extra</button>
+<button class="add" onclick="addEnv()">+ EnvLight</button>
 </div>
 
 <button onclick="generate()">Lua generieren</button>
@@ -73,10 +85,12 @@ button{font-weight:600;cursor:pointer}
 
 <script>
 const patterns=[
-"double","double_inv","rapid","single","steady","wigwag_a","wigwag_b",
-"v47_double_A","v47_double_B","v47_double_C",
-"matrix1","matrix2","tree","tree_inv",
-"heck_hyper","heck_rapid","heck_aggro_a","heck_aggro_b"
+'double','double_inv','rapid','single','steady',
+'wigwag_a','wigwag_b',
+'v47_double_A','v47_double_B','v47_double_C',
+'matrix1','matrix2',
+'tree','tree_inv',
+'heck_hyper','heck_rapid','heck_aggro_a','heck_aggro_b'
 ];
 
 function tab(i){
@@ -102,39 +116,29 @@ r.innerHTML=`<input class="sid" placeholder="Extra ID"><button class="remove" on
 scene.appendChild(r);
 }
 
-/* ===== ENVLIGHTS ===== */
-function addEnvGroup(){
-const g=document.createElement('div');
-g.className='card';
-g.style.marginTop='10px';
-g.innerHTML=`
-<label>Extra ID<input class="eid"></label>
-<div class="elist"></div>
-<button class="add">+ EnvLight</button>`;
-g.querySelector('.add').onclick=()=>addEnv(g.querySelector('.elist'));
-env.appendChild(g);
-}
-
-function addEnv(c){
+function addEnv(){
 const r=document.createElement('div');
-r.className='row';
+r.className='card';
+r.style.marginTop='10px';
 r.innerHTML=`
-<input placeholder="type" value="point">
-<input placeholder="dir" value="out">
-<input placeholder="rotX" value="0.0">
-<input placeholder="rotY" value="0.0">
-<input placeholder="rotZ" value="0.0">
-<input placeholder="offset (x,y,z)" value="1.0,1.0,1.0">
-<input type="color" value="#0000ff">
-<input placeholder="range" value="25.0">
-<input placeholder="intensity" value="2.5">
-<button class="remove" onclick="this.parentNode.remove()">X</button>`;
-c.appendChild(r);
+<label>Extra ID<input class="eid"></label>
+<label>Type<input class="etype" placeholder="point / spot"></label>
+<label>Dir<input class="edir" placeholder="out / in"></label>
+<label>Offset (vector3)<input class="offset" placeholder="vector3(x,y,z)"></label>
+<label>Rotation (vector3)<input class="rotation" placeholder="vector3(x,y,z)"></label>
+<label>Color<input type="color" class="color"></label>
+<label>Range<input class="range"></label>
+<label>Intensity<input class="intensity"></label>
+<button class="remove" onclick="this.parentNode.remove()">X</button>
+`;
+env.appendChild(r);
 }
 
-function vec3(str){
-const v=str.split(',').map(x=>x.trim());
-return `{ x=${v[0]||0}, y=${v[1]||0}, z=${v[2]||0} }`;
+function vec3(v){
+if(!v) return null;
+v=v.replace(/vector3|\(|\)/gi,'');
+const a=v.split(',').map(e=>e.trim());
+return `{ x=${a[0]}, y=${a[1]}, z=${a[2]} }`;
 }
 
 function buildExtras(c){
@@ -144,43 +148,7 @@ const id=r.querySelector('.id').value;
 const sel=r.querySelector('select');
 if(!id||!sel)return;
 const p=[...sel.selectedOptions].map(o=>`"${o.value}"`);
-o.push(`        [${id}] = {${p.join(', ')}},`);
-});
-return o.join("\n");
-}
-
-function buildSceneExtras(){
-let o=[];
-[...scene.children].forEach(r=>{
-const id=r.querySelector('.sid').value;
-if(id) o.push(`        [${id}] = true,`);
-});
-return o.join("\n");
-}
-
-function buildEnvLights(){
-let o=[];
-[...env.children].forEach(g=>{
-const eid=g.querySelector('.eid').value;
-if(!eid)return;
-const rows=[...g.querySelector('.elist').children];
-let lights=rows.map(r=>{
-const i=r.querySelectorAll('input');
-const hex=i[6].value;
-const R=parseInt(hex.substr(1,2),16);
-const G=parseInt(hex.substr(3,2),16);
-const B=parseInt(hex.substr(5,2),16);
-return `{
-                type = "${i[0].value}",
-                dir = "${i[1].value}",
-                rotation = { x=${i[2].value}, y=${i[3].value}, z=${i[4].value} },
-                offset = ${vec3(i[5].value)},
-                color = { r=${R}, g=${G}, b=${B} },
-                range = ${i[7].value},
-                intensity = ${i[8].value}
-            }`;
-});
-o.push(`        [${eid}] = {\n${lights.join(',\n')}\n        },`);
+o.push(p.length>1?`        [${id}] = {${p.join(', ')}},`:`        [${id}] = ${p[0]},`);
 });
 return o.join("\n");
 }
@@ -205,11 +173,23 @@ ${buildExtras(rear)}
     },
 
     sceneExtras = {
-${buildSceneExtras()}
+${[...scene.children].map(r=>`        [${r.querySelector('.sid').value}] = true,`).join("\n")}
     },
 
     envLights = {
-${buildEnvLights()}
+${[...env.children].map(e=>{
+const color=e.querySelector('.color').value.match(/\w\w/g).map(x=>parseInt(x,16));
+return `        {
+            extra = ${e.querySelector('.eid').value},
+            type = "${e.querySelector('.etype').value}",
+            dir = "${e.querySelector('.edir').value}",
+            offset = ${vec3(e.querySelector('.offset').value)},
+            rotation = ${vec3(e.querySelector('.rotation').value)},
+            color = { r=${color[0]}, g=${color[1]}, b=${color[2]} },
+            range = ${e.querySelector('.range').value},
+            intensity = ${e.querySelector('.intensity').value}
+        },`;
+}).join("\n")}
     }
 }`;
 }
