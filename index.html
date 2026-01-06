@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>ELSPro Fahrzeug Configurator</title>
+
 <style>
 body{font-family:Inter,system-ui;background:#020617;color:#e5e7eb;margin:0;padding:20px}
 h1{margin-bottom:10px}
@@ -11,12 +12,12 @@ h1{margin-bottom:10px}
 .tab.active{background:#2563eb}
 .panel{display:none}
 .panel.active{display:block}
-.card{background:#020617;border-radius:16px;padding:16px;box-shadow:0 20px 50px rgba(0,0,0,.6)}
+.card{background:#020617;border-radius:16px;padding:16px;box-shadow:0 20px 50px rgba(0,0,0,.6);margin-top:10px}
 label{display:block;margin-top:10px;font-size:13px}
 input,select,textarea,button{
 width:100%;margin-top:6px;padding:10px;border-radius:10px;
 border:1px solid #1e293b;background:#020617;color:#e5e7eb}
-textarea{height:720px;font-family:ui-monospace,monospace}
+textarea{height:700px;font-family:ui-monospace,monospace}
 .row{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
 .row>*{flex:1}
 button{font-weight:600;cursor:pointer}
@@ -24,76 +25,87 @@ button{font-weight:600;cursor:pointer}
 .remove{background:#dc2626}
 </style>
 </head>
+
 <body>
 
 <h1>ELSPro Fahrzeug Configurator</h1>
 
-<!-- Tabs -->
 <div class="tabs">
-<div class="tab active" onclick="tab(0)">Allgemein</div>
-<div class="tab" onclick="tab(1)">Light</div>
-<div class="tab" onclick="tab(2)">Front</div>
-<div class="tab" onclick="tab(3)">Rear</div>
-<div class="tab" onclick="tab(4)">Umfeld</div>
-<div class="tab" onclick="tab(5)">Sirenen</div>
-<div class="tab" onclick="tab(6)">EnvLights</div>
+    <div class="tab active" onclick="tab(0)">Allgemein</div>
+    <div class="tab" onclick="tab(1)">Light</div>
+    <div class="tab" onclick="tab(2)">Front</div>
+    <div class="tab" onclick="tab(3)">Rear</div>
+    <div class="tab" onclick="tab(4)">Umfeld</div>
+    <div class="tab" onclick="tab(5)">Sirenen</div>
+    <div class="tab" onclick="tab(6)">EnvLights</div>
 </div>
 
 <div class="card">
 
 <!-- Allgemein -->
 <div class="panel active">
-<label>Spawnname<input id="vehicle"></label>
-<label>Layout<input id="layout"></label>
-<label>NoFlash<select id="noflash"><option>true</option><option>false</option></select></label>
+    <label>Spawnname<input id="vehicle"></label>
+    <label>Layout<input id="layout"></label>
+    <label>NoFlash<select id="noflash"><option>true</option><option>false</option></select></label>
 </div>
 
 <!-- Light -->
 <div class="panel">
-<div id="light"></div>
-<button class="add" onclick="addExtra(light)">+ Extra</button>
+    <div id="light"></div>
+    <button class="add" onclick="addExtra(light)">+ Extra</button>
 </div>
 
 <!-- Front -->
 <div class="panel">
-<div id="front"></div>
-<button class="add" onclick="addExtra(front)">+ Extra</button>
+    <div id="front"></div>
+    <button class="add" onclick="addExtra(front)">+ Extra</button>
 </div>
 
 <!-- Rear -->
 <div class="panel">
-<div id="rear"></div>
-<button class="add" onclick="addExtra(rear)">+ Extra</button>
+    <div id="rear"></div>
+    <button class="add" onclick="addExtra(rear)">+ Extra</button>
 </div>
 
 <!-- Umfeld -->
 <div class="panel">
-<div id="scene"></div>
-<button class="add" onclick="addScene()">+ Extra</button>
+    <div id="scene"></div>
+    <button class="add" onclick="addScene()">+ Extra</button>
 </div>
 
 <!-- Sirenen -->
 <div class="panel">
-<div id="sirens"></div>
-<button class="add" onclick="addSiren()">+ Sirene</button>
-<label>Offset (vector3)</label>
-<input id="sOffset" placeholder="vector3(0.0, 3.5, 0.5)">
-<label>Directional</label>
-<select id="sdir"><option>true</option><option>false</option></select>
-<label>Quiet Zone</label>
-<select id="squiet"><option>front</option><option>back</option><option>left</option><option>right</option></select>
-<label>Range</label>
-<input id="srange">
-<label>Traffic Clear</label>
-<select id="traffic"><option>true</option><option>false</option></select>
-<label>Megaphone</label>
-<select id="mega"><option>true</option><option>false</option></select>
+    <div id="sirens"></div>
+    <button class="add" onclick="addSiren()">+ Sirene</button>
+
+    <label>Offset (vector3)</label>
+    <input id="sOffset">
+
+    <label>Directional</label>
+    <select id="sdir"><option>true</option><option>false</option></select>
+
+    <label>Quiet Zone</label>
+    <select id="squiet">
+        <option>front</option>
+        <option>back</option>
+        <option>left</option>
+        <option>right</option>
+    </select>
+
+    <label>Range</label>
+    <input id="srange">
+
+    <label>Traffic Clear</label>
+    <select id="traffic"><option>true</option><option>false</option></select>
+
+    <label>Megaphone</label>
+    <select id="mega"><option>true</option><option>false</option></select>
 </div>
 
 <!-- EnvLights -->
 <div class="panel">
-<div id="env"></div>
-<button class="add" onclick="addEnv()">+ EnvLight</button>
+    <div id="env"></div>
+    <button class="add" onclick="addEnvGroup()">+ Env Extra</button>
 </div>
 
 <button onclick="generate()">Lua generieren</button>
@@ -117,74 +129,91 @@ const sirenList=[
 ];
 
 function tab(i){
-document.querySelectorAll('.tab').forEach((t,n)=>t.classList.toggle('active',n===i));
-document.querySelectorAll('.panel').forEach((p,n)=>p.classList.toggle('active',n===i));
+    document.querySelectorAll('.tab').forEach((t,n)=>t.classList.toggle('active',n===i));
+    document.querySelectorAll('.panel').forEach((p,n)=>p.classList.toggle('active',n===i));
 }
 
 function patternSelect(){
-return `<select multiple>${patterns.map(p=>`<option>${p}</option>`).join('')}</select>`;
+    return `<select multiple>${patterns.map(p=>`<option>${p}</option>`).join('')}</select>`;
 }
 
 function addExtra(c){
-const r=document.createElement('div');
-r.className='row';
-r.innerHTML=`<input class="id" placeholder="Extra ID">${patternSelect()}<button class="remove" onclick="this.parentNode.remove()">X</button>`;
-c.appendChild(r);
+    const r=document.createElement('div');
+    r.className='row';
+    r.innerHTML=`<input class="id" placeholder="Extra ID">${patternSelect()}
+    <button class="remove" onclick="this.parentNode.remove()">X</button>`;
+    c.appendChild(r);
 }
 
 function addScene(){
-const r=document.createElement('div');
-r.className='row';
-r.innerHTML=`<input class="sid" placeholder="Extra ID"><button class="remove" onclick="this.parentNode.remove()">X</button>`;
-scene.appendChild(r);
+    const r=document.createElement('div');
+    r.className='row';
+    r.innerHTML=`<input class="sid" placeholder="Extra ID">
+    <button class="remove" onclick="this.parentNode.remove()">X</button>`;
+    scene.appendChild(r);
 }
 
 function addSiren(){
-const r=document.createElement('div');
-r.className='row';
-r.innerHTML=`<select>${sirenList.map(s=>`<option>${s}</option>`).join('')}</select>
-<button class="remove" onclick="this.parentNode.remove()">X</button>`;
-sirens.appendChild(r);
+    const r=document.createElement('div');
+    r.className='row';
+    r.innerHTML=`<select>${sirenList.map(s=>`<option>${s}</option>`).join('')}</select>
+    <button class="remove" onclick="this.parentNode.remove()">X</button>`;
+    sirens.appendChild(r);
 }
 
-function addEnv(){
-const r=document.createElement('div');
-r.className='card';
-r.style.marginTop='10px';
-r.innerHTML=`
-<label>Extra ID<input class="eid"></label>
-<label>Type<input class="etype" placeholder="point / spot"></label>
-<label>Dir<input class="edir" placeholder="out / in"></label>
-<label>Offset (vector3)<input class="offset" placeholder="vector3(x,y,z)"></label>
-<label>Rotation (vector3)<input class="rotation" placeholder="vector3(x,y,z)"></label>
-<label>Color<input type="color" class="color"></label>
-<label>Range<input class="range"></label>
-<label>Intensity<input class="intensity"></label>
-<button class="remove" onclick="this.parentNode.remove()">X</button>`;
-env.appendChild(r);
+/* -------- EnvLights Gruppen -------- */
+
+function addEnvGroup(){
+    const g=document.createElement('div');
+    g.className='card';
+    g.innerHTML=`
+        <label>Extra ID<input class="envExtra"></label>
+        <div class="envList"></div>
+        <button class="add">+ EnvLight</button>
+    `;
+    g.querySelector('.add').onclick=()=>addEnvLight(g.querySelector('.envList'));
+    env.appendChild(g);
+}
+
+function addEnvLight(c){
+    const r=document.createElement('div');
+    r.className='card';
+    r.innerHTML=`
+        <label>Type<input class="etype"></label>
+        <label>Dir<input class="edir"></label>
+        <label>Offset (vector3)<input class="offset"></label>
+        <label>Rotation (vector3)<input class="rotation"></label>
+        <label>Color<input type="color" class="color"></label>
+        <label>Range<input class="range"></label>
+        <label>Intensity<input class="intensity"></label>
+        <button class="remove" onclick="this.parentNode.remove()">X</button>
+    `;
+    c.appendChild(r);
 }
 
 function vec3(v){
-if(!v) return `{ x=0.0, y=0.0, z=0.0 }`;
-v=v.replace(/vector3|\(|\)/gi,'');
-const a=v.split(',').map(e=>e.trim());
-return `{ x=${a[0]}, y=${a[1]}, z=${a[2]} }`;
+    if(!v) return null;
+    v=v.replace(/vector3|\(|\)/gi,'');
+    const a=v.split(',').map(e=>e.trim());
+    return `{ x=${a[0]}, y=${a[1]}, z=${a[2]} }`;
 }
 
 function buildExtras(c){
-let o=[];
-[...c.children].forEach(r=>{
-const id=r.querySelector('.id')?.value;
-const sel=r.querySelector('select');
-if(!id||!sel) return;
-const p=[...sel.selectedOptions].map(o=>`"${o.value}"`);
-o.push(p.length>1?`        [${id}] = {${p.join(', ')}},`:`        [${id}] = ${p[0]},`);
-});
-return o.join("\n");
+    let o=[];
+    [...c.children].forEach(r=>{
+        const id=r.querySelector('.id')?.value;
+        const sel=r.querySelector('select');
+        if(!id||!sel) return;
+        const p=[...sel.selectedOptions].map(o=>`"${o.value}"`);
+        o.push(p.length>1?
+            `        [${id}] = {${p.join(', ')}},`:
+            `        [${id}] = ${p[0]},`);
+    });
+    return o.join("\n");
 }
 
 function generate(){
-out.value=
+    out.value=
 `ELSPro.Vehicles[GetHashKey("${vehicle.value}")] = {
 
     layout = "${layout.value}",
@@ -203,7 +232,8 @@ ${buildExtras(rear)}
     },
 
     sceneExtras = {
-${[...scene.children].map(r=>r.querySelector('.sid')?.value?`        [${r.querySelector('.sid').value}] = true,`:'').join('\n')}
+${[...scene.children].map(r=>r.querySelector('.sid')?.value?
+`        [${r.querySelector('.sid').value}] = true,`:'').join('\n')}
     },
 
     wmTones = {
@@ -218,19 +248,22 @@ ${[...sirens.children].map((r,i)=>`        [${i+1}] = "${r.querySelector('select
     hasMegaphone = ${mega.value},
 
     envLights = {
-${[...env.children].map(e=>{
-const color=e.querySelector('.color').value.match(/\w\w/g).map(x=>parseInt(x,16));
-return `        {
-            extra = ${e.querySelector('.eid').value},
-            type = "${e.querySelector('.etype').value}",
-            dir = "${e.querySelector('.edir').value}",
-            offset = ${vec3(e.querySelector('.offset').value)},
-            rotation = ${vec3(e.querySelector('.rotation').value)},
-            color = { r=${color[0]}, g=${color[1]}, b=${color[2]} },
-            range = ${e.querySelector('.range').value},
-            intensity = ${e.querySelector('.intensity').value}
-        },`;
-}).join("\n")}
+${[...env.children].map(g=>{
+const eid=g.querySelector('.envExtra').value;
+const lights=[...g.querySelectorAll('.envList>.card')].map(e=>{
+const col=e.querySelector('.color').value.match(/\w\w/g).map(x=>parseInt(x,16));
+return `            {
+                type = "${e.querySelector('.etype').value}",
+                dir = "${e.querySelector('.edir').value}",
+                offset = ${vec3(e.querySelector('.offset').value)},
+                rotation = ${vec3(e.querySelector('.rotation').value)},
+                color = { r=${col[0]}, g=${col[1]}, b=${col[2]} },
+                range = ${e.querySelector('.range').value},
+                intensity = ${e.querySelector('.intensity').value}
+            }`;
+}).join(',\n');
+return `        [${eid}] = {\n${lights}\n        },`;
+}).join('\n')}
     }
 }`;
 }
