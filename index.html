@@ -1,45 +1,90 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-<meta charset="UTF-8" />
-<title>ELSPro Lua Creator (Strict)</title>
+<meta charset="UTF-8">
+<title>ELSPro Configurator</title>
+
 <style>
-body{font-family:Inter,system-ui,Arial;background:linear-gradient(180deg,#0b1220,#020617);color:#e5e7eb;margin:0;padding:24px}
-h1{font-size:28px;margin-bottom:8px}
-.grid{display:grid;grid-template-columns:420px 1fr;gap:24px}
-.card{background:#020617;border-radius:16px;padding:18px;box-shadow:0 20px 50px rgba(0,0,0,.55)}
+body{font-family:Inter,system-ui;background:#020617;color:#e5e7eb;margin:0;padding:20px}
+h1{margin-bottom:10px}
+.tabs{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.tab{padding:8px 14px;border-radius:10px;background:#020617;border:1px solid #1e293b;cursor:pointer}
+.tab.active{background:#2563eb}
+.panel{display:none}
+.panel.active{display:block}
+.card{background:#020617;border-radius:16px;padding:16px;box-shadow:0 20px 50px rgba(0,0,0,.6)}
 label{display:block;margin-top:10px;font-size:13px}
-input,select,textarea{width:100%;margin-top:6px;padding:10px;border-radius:12px;border:1px solid #1e293b;background:#020617;color:#e5e7eb}
-textarea{min-height:760px;font-family:ui-monospace,Menlo,monospace}
-button{margin-top:12px;padding:10px 14px;border-radius:12px;border:none;background:#2563eb;color:#fff;font-weight:600;cursor:pointer}
-button.danger{background:#dc2626}
-.row{display:flex;gap:8px;margin-top:8px}
-.row input{flex:1}
-.section{border-top:1px solid #1e293b;margin-top:18px;padding-top:14px}
-.error{color:#f87171;font-size:13px;margin-top:8px}
+input,select,textarea,button{
+width:100%;margin-top:6px;padding:10px;border-radius:10px;
+border:1px solid #1e293b;background:#020617;color:#e5e7eb}
+textarea{height:700px;font-family:ui-monospace,monospace}
+.row{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
+.row>*{flex:1}
+button{font-weight:600;cursor:pointer}
+.add{background:#22c55e;color:#022c22}
+.remove{background:#dc2626}
 </style>
 </head>
+
 <body>
 
-<h1>ELSPro Fahrzeug‑Configurator (Strict / No Deviation)</h1>
+<h1>ELSPro Fahrzeug Configurator</h1>
 
-<div class="grid">
+<div class="tabs">
+<div class="tab active" onclick="tab(0)">Allgemein</div>
+<div class="tab" onclick="tab(1)">Light</div>
+<div class="tab" onclick="tab(2)">Front</div>
+<div class="tab" onclick="tab(3)">Rear</div>
+<div class="tab" onclick="tab(4)">Umfeld</div>
+<div class="tab" onclick="tab(5)">Sirenen</div>
+<div class="tab" onclick="tab(6)">EnvLights</div>
+</div>
+
 <div class="card">
 
-<label>Spawnname<input id="vehicle" value="ExampleVehicle" required></label>
-<label>Layout<input id="layout" value="Test1" required></label>
+<!-- ALLGEMEIN -->
+<div class="panel active">
+<label>Spawnname<input id="vehicle" value="yourvehicle"></label>
+<label>Layout<input id="layout" value="Default"></label>
 <label>NoFlash<select id="noflash"><option>true</option><option>false</option></select></label>
+</div>
 
-<div class="section"><h3>Blaulicht</h3><div id="light"></div><button onclick="addLight()">+ Extra</button></div>
-<div class="section"><h3>Frontblitzer</h3><div id="front"></div><button onclick="addFront()">+ Extra</button></div>
-<div class="section"><h3>Heckwarner</h3><div id="rear"></div><button onclick="addRear()">+ Extra</button></div>
-<div class="section"><h3>Umfeld</h3><div id="scene"></div><button onclick="addScene()">+ Extra</button></div>
-<div class="section"><h3>Matrix</h3><div id="matrix"></div><button onclick="addMatrix()">+ Extra</button></div>
+<!-- LIGHT -->
+<div class="panel">
+<div id="light"></div>
+<button class="add" onclick="addExtra(light)">+ Extra</button>
+</div>
 
-<div class="section"><h3>Sirenen</h3><div id="sirens"></div><button onclick="addSiren()">+ Sirene</button></div>
+<!-- FRONT -->
+<div class="panel">
+<div id="front"></div>
+<button class="add" onclick="addExtra(front)">+ Extra</button>
+</div>
 
-<div class="section"><h3>Siren Einstellungen</h3>
-<div class="row"><input id="sx" placeholder="x" value="0.0"><input id="sy" placeholder="y" value="3.5"><input id="sz" placeholder="z" value="0.5"></div>
+<!-- REAR -->
+<div class="panel">
+<div id="rear"></div>
+<button class="add" onclick="addExtra(rear)">+ Extra</button>
+</div>
+
+<!-- UMFELD (sceneExtras – KEINE Muster) -->
+<div class="panel">
+<div id="scene"></div>
+<button class="add" onclick="addScene()">+ Umfeld Extra</button>
+</div>
+
+<!-- SIRENEN -->
+<div class="panel">
+<div id="sirens"></div>
+<button class="add" onclick="addSiren()">+ Sirene</button>
+
+<label>Offset</label>
+<div class="row">
+<input id="sx" value="0.0">
+<input id="sy" value="3.5">
+<input id="sz" value="0.5">
+</div>
+
 <label>Directional<select id="sdir"><option>true</option><option>false</option></select></label>
 <label>Quiet Zone<select id="squiet"><option>back</option><option>front</option><option>left</option><option>right</option></select></label>
 <label>Range<input id="srange" value="500.0"></label>
@@ -47,57 +92,170 @@ button.danger{background:#dc2626}
 <label>Megaphone<select id="mega"><option>true</option><option>false</option></select></label>
 </div>
 
-<div class="section"><h3>EnvLights</h3><div id="env"></div><button onclick="addEnvGroup()">+ Extra</button></div>
-
-<div id="err" class="error"></div>
-<button onclick="generate()">Lua generieren (STRICT)</button>
+<!-- ENVLIGHTS -->
+<div class="panel">
+<div id="env"></div>
+<button class="add" onclick="addEnvGroup()">+ Env Extra</button>
 </div>
 
-<div class="card"><textarea id="out" readonly></textarea></div>
+<button onclick="generate()">Lua generieren</button>
+<textarea id="out"></textarea>
+
 </div>
 
 <script>
-function row(html,del){const r=document.createElement('div');r.className='row';r.innerHTML=html;const b=document.createElement('button');b.textContent='X';b.className='danger';b.onclick=()=>r.remove();r.appendChild(b);return r}
-function addLight(){light.appendChild(row('<input placeholder="ID"><input placeholder="Pattern(s) komma‑getrennt">'))}
-function addFront(){front.appendChild(row('<input placeholder="ID"><input placeholder="Pattern">'))}
-function addRear(){rear.appendChild(row('<input placeholder="ID"><input placeholder="Pattern">'))}
-function addScene(){scene.appendChild(row('<input placeholder="ID">'))}
-function addMatrix(){matrix.appendChild(row('<input placeholder="ID">'))}
-function addSiren(){sirens.appendChild(row(`<select required>
-<option value="">Sirene auswählen</option>
-<option>SIREN_echo</option>
-<option>SIREN_CHARLIE</option>
-<option>SIREN_ALPHA</option>
-<option>SIREN_WAIL</option>
-<option>SIREN_YELP</option>
-<option>SIREN_PRIORITY</option>
-</select>`))}
+const patterns=["double","double_inv","rapid","single","steady","wigwag_a","wigwag_b","matrix","matrix_inv"];
+const sirenList=["SIREN_ALPHA","SIREN_BRAVO","SIREN_CHARLIE","SIREN_DELTA"];
 
-function addEnvGroup(){const g=document.createElement('div');g.className='card';g.style.marginTop='12px';g.innerHTML='<label>Extra ID<input class="eid"></label><div class="elist"></div>';const b=document.createElement('button');b.textContent='+ EnvLight';b.onclick=()=>addEnv(g.querySelector('.elist'));g.appendChild(b);env.appendChild(g)}
-function addEnv(c){c.appendChild(row('<input placeholder="x"><input placeholder="y"><input placeholder="z"><input placeholder="R"><input placeholder="G"><input placeholder="B"><input placeholder="Range"><input placeholder="Intensity">'))}
+function tab(i){
+document.querySelectorAll('.tab').forEach((t,n)=>t.classList.toggle('active',n===i));
+document.querySelectorAll('.panel').forEach((p,n)=>p.classList.toggle('active',n===i));
+}
 
-function must(v){if(!v)throw 'Alle Felder müssen ausgefüllt sein'}
+function patternSelect(){
+return `<select multiple>${patterns.map(p=>`<option>${p}</option>`).join('')}</select>`;
+}
 
-function collect(container,fn){return [...container.children].map(fn)}
+function addExtra(c){
+const r=document.createElement('div');
+r.className='row';
+r.innerHTML=`<input class="id" placeholder="Extra ID">${patternSelect()}<button class="remove" onclick="this.parentNode.remove()">X</button>`;
+c.appendChild(r);
+}
 
-function generate(){try{
-err.textContent='';
+function addScene(){
+const r=document.createElement('div');
+r.className='row';
+r.innerHTML=`<input class="sid" placeholder="Extra ID"><button class="remove" onclick="this.parentNode.remove()">X</button>`;
+scene.appendChild(r);
+}
 
-const lx=collect(light,r=>{const i=r.querySelectorAll('input');must(i[0].value);must(i[1].value);const p=i[1].value.split(',').map(s=>`"${s.trim()}"`);return p.length>1?`        [${i[0].value}] = {${p.join(', ')}}`:`        [${i[0].value}] = "${i[1].value}"`}).join(',\n');
+function addSiren(){
+const r=document.createElement('div');
+r.className='row';
+r.innerHTML=`<select>${sirenList.map(s=>`<option>${s}</option>`).join('')}</select><button class="remove" onclick="this.parentNode.remove()">X</button>`;
+sirens.appendChild(r);
+}
 
-const fx=collect(front,r=>{const i=r.querySelectorAll('input');must(i[0].value);must(i[1].value);return `        [${i[0].value}] = "${i[1].value}"`}).join(',\n');
-const rx=collect(rear,r=>{const i=r.querySelectorAll('input');must(i[0].value);must(i[1].value);return `        [${i[0].value}] = "${i[1].value}"`}).join(',\n');
-const sx=collect(scene,r=>{const i=r.querySelector('input');must(i.value);return i.value}).join(', ');
-const mx=collect(matrix,r=>{const i=r.querySelector('input');must(i.value);return i.value}).join(', ');
-const st=collect(sirens,(r,i)=>{const s=r.querySelector('select');must(s.value);return `        [${i+1}] = "${s.value}"`}).join(',\n');
+/* ENVLIGHTS */
+function addEnvGroup(){
+const g=document.createElement('div');
+g.className='card';
+g.style.marginTop='10px';
+g.innerHTML=`<label>Extra ID<input class="eid"></label><div class="elist"></div><button class="add">+ EnvLight</button>`;
+g.querySelector('.add').onclick=()=>addEnv(g.querySelector('.elist'));
+env.appendChild(g);
+}
 
-let envOut='';
-collect(env,g=>{const id=g.querySelector('.eid').value;must(id);const items=collect(g.querySelector('.elist'),r=>{const i=r.querySelectorAll('input');i.forEach(x=>must(x.value));return `            {\n                type = "point",\n                dir = "out",\n                offset    = { x = ${i[0].value},  y = ${i[1].value},   z = ${i[2].value} },\n                color     = { r = ${i[3].value},  g = ${i[4].value},   b = ${i[5].value} },\n                range     = ${i[6].value},\n                intensity = ${i[7].value}\n            }`}).join(',\n');
- envOut+=`        [${id}] = {\n${items}\n        },\n`});
+function addEnv(c){
+const r=document.createElement('div');
+r.className='row';
+r.innerHTML=`
+<input placeholder="type" value="point">
+<input placeholder="dir" value="out">
+<input placeholder="rotX" value="0.0">
+<input placeholder="rotY" value="0.0">
+<input placeholder="rotZ" value="0.0">
+<input placeholder="offX" value="1.0">
+<input placeholder="offY" value="1.0">
+<input placeholder="offZ" value="1.0">
+<input type="color" value="#0000ff">
+<input placeholder="range" value="25.0">
+<input placeholder="intensity" value="2.5">
+<button class="remove" onclick="this.parentNode.remove()">X</button>`;
+c.appendChild(r);
+}
 
-out.value=`ELSPro.Vehicles[GetHashKey("${vehicle.value}")] = {\n    \n    layout = "${layout.value}", -- Name des gespeicherten Layouts (siehe Ingame Tablet /els_config)\n    \n    noFlash = ${noflash.value}, -- Wenn TRUE, wird dieses Fahrzeug nicht geblitzt (benötigt ELSPro.NoFlashOnBlueLight = true)\n\n    -- BLAULICHT\n    -- hasBeacon = true, -- Wenn TRUE, hat das Fahrzeug eine aufsetzbare Kennleuchte (via # Taste)\n    -- beaconExtra = 10, -- Das Extra für die Aufsetz-Kennleuchte\n\n    lightExtras = {\n${lx}\n    },\n\n    -- Frontblitzer\n    frontExtras = {\n${fx}\n    },\n\n    -- HECKWARNER\n    rearExtras = {\n${rx}\n    },\n\n    -- UMFELD\n    sceneExtras = { ${sx} },\n\n    -- MATRIX (NEU)\n    matrixExtras = { ${mx} }, -- Beispiel Extra 10, falls vorhanden. Sonst anpassen!\n\n    -- SIRENEN\n    wmTones = {\n${st}\n    },\n\n    -- SIRENEN POSITION & RICHTUNG (NEU)\n    sirenOffset      = { x = ${sx}, y = ${sy.value}, z = ${sz.value} }, -- Beispiel: Vorne an der Stoßstange\n    sirenDirectional = ${sdir.value},\n    sirenQuietZone   = "${squiet.value}",\n    sirenRange       = ${srange.value},\n    allowTrafficClear = ${traffic.value},\n    hasMegaphone      = ${mega.value},\n    \n    -- optional: EnvLights, wenn du sie nutzen willst:\n    envLights = {\n${envOut}    }\n}`;
+/* BUILDERS */
+function buildExtras(c){
+let o=[];
+[...c.children].forEach(r=>{
+const id=r.querySelector('.id').value;
+const sel=r.querySelector('select');
+if(!id||!sel)return;
+const p=[...sel.selectedOptions].map(o=>`"${o.value}"`);
+o.push(`        [${id}] = {${p.join(', ')}},`);
+});
+return o.join("\n");
+}
 
-}catch(e){err.textContent=e}}
+function buildSceneExtras(){
+let o=[];
+[...scene.children].forEach(r=>{
+const id=r.querySelector('.sid').value;
+if(!id)return;
+o.push(`        [${id}] = true,`);
+});
+return o.join("\n");
+}
+
+function buildEnvLights(){
+let o=[];
+[...env.children].forEach(g=>{
+const eid=g.querySelector('.eid').value;
+if(!eid)return;
+const rows=[...g.querySelector('.elist').children];
+let lights=rows.map(r=>{
+const i=r.querySelectorAll('input');
+const hex=i[8].value;
+const R=parseInt(hex.substr(1,2),16);
+const G=parseInt(hex.substr(3,2),16);
+const B=parseInt(hex.substr(5,2),16);
+return `{
+                type="${i[0].value}",
+                dir="${i[1].value}",
+                rotation={x=${i[2].value},y=${i[3].value},z=${i[4].value}},
+                offset={x=${i[5].value},y=${i[6].value},z=${i[7].value}},
+                color={r=${R},g=${G},b=${B}},
+                range=${i[9].value},
+                intensity=${i[10].value}
+            }`;
+});
+o.push(`        [${eid}] = {\n${lights.join(',\n')}\n        },`);
+});
+return o.join("\n");
+}
+
+function generate(){
+out.value=
+`ELSPro.Vehicles[GetHashKey("${vehicle.value}")] = {
+
+    layout = "${layout.value}",
+    noFlash = ${noflash.value},
+
+    lightExtras = {
+${buildExtras(light)}
+    },
+
+    frontExtras = {
+${buildExtras(front)}
+    },
+
+    rearExtras = {
+${buildExtras(rear)}
+    },
+
+    -- UMFELDBELEUCHTUNG (keine Blitzmuster)
+    sceneExtras = {
+${buildSceneExtras()}
+    },
+
+    wmTones = {
+${[...sirens.children].map((r,i)=>`        [${i+1}] = "${r.querySelector('select').value}"`).join(',\n')}
+    },
+
+    sirenOffset = { x=${sx.value}, y=${sy.value}, z=${sz.value} },
+    sirenDirectional = ${sdir.value},
+    sirenQuietZone = "${squiet.value}",
+    sirenRange = ${srange.value},
+    allowTrafficClear = ${traffic.value},
+    hasMegaphone = ${mega.value},
+
+    envLights = {
+${buildEnvLights()}
+    }
+}`;
+}
 </script>
 </body>
 </html>
