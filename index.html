@@ -2,8 +2,7 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<title>ELSPro Configurator</title>
-
+<title>ELSPro Fahrzeug Configurator</title>
 <style>
 body{font-family:Inter,system-ui;background:#020617;color:#e5e7eb;margin:0;padding:20px}
 h1{margin-bottom:10px}
@@ -18,25 +17,26 @@ input,select,textarea,button{
 width:100%;margin-top:6px;padding:10px;border-radius:10px;
 border:1px solid #1e293b;background:#020617;color:#e5e7eb}
 textarea{height:720px;font-family:ui-monospace,monospace}
-.row{display:flex;gap:6px;margin-top:6px}
+.row{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
 .row>*{flex:1}
 button{font-weight:600;cursor:pointer}
 .add{background:#22c55e;color:#022c22}
 .remove{background:#dc2626}
 </style>
 </head>
-
 <body>
 
 <h1>ELSPro Fahrzeug Configurator</h1>
 
+<!-- Tabs -->
 <div class="tabs">
 <div class="tab active" onclick="tab(0)">Allgemein</div>
 <div class="tab" onclick="tab(1)">Light</div>
 <div class="tab" onclick="tab(2)">Front</div>
 <div class="tab" onclick="tab(3)">Rear</div>
 <div class="tab" onclick="tab(4)">Umfeld</div>
-<div class="tab" onclick="tab(5)">EnvLights</div>
+<div class="tab" onclick="tab(5)">Sirenen</div>
+<div class="tab" onclick="tab(6)">EnvLights</div>
 </div>
 
 <div class="card">
@@ -72,6 +72,24 @@ button{font-weight:600;cursor:pointer}
 <button class="add" onclick="addScene()">+ Extra</button>
 </div>
 
+<!-- Sirenen -->
+<div class="panel">
+<div id="sirens"></div>
+<button class="add" onclick="addSiren()">+ Sirene</button>
+<label>Offset (vector3)</label>
+<input id="sOffset" placeholder="vector3(0.0, 3.5, 0.5)">
+<label>Directional</label>
+<select id="sdir"><option>true</option><option>false</option></select>
+<label>Quiet Zone</label>
+<select id="squiet"><option>front</option><option>back</option><option>left</option><option>right</option></select>
+<label>Range</label>
+<input id="srange">
+<label>Traffic Clear</label>
+<select id="traffic"><option>true</option><option>false</option></select>
+<label>Megaphone</label>
+<select id="mega"><option>true</option><option>false</option></select>
+</div>
+
 <!-- EnvLights -->
 <div class="panel">
 <div id="env"></div>
@@ -88,9 +106,14 @@ const patterns=[
 'double','double_inv','rapid','single','steady',
 'wigwag_a','wigwag_b',
 'v47_double_A','v47_double_B','v47_double_C',
-'matrix1','matrix2',
-'tree','tree_inv',
+'matrix1','matrix2','tree','tree_inv',
 'heck_hyper','heck_rapid','heck_aggro_a','heck_aggro_b'
+];
+
+const sirenList=[
+"SIREN_ALPHA","SIREN_BRAVO","SIREN_CHARLIE",
+"SIREN_DELTA","SIREN_ECHO","SIREN_FOXTROT",
+"SIREN_GOLF","SIREN_HOTEL"
 ];
 
 function tab(i){
@@ -116,6 +139,14 @@ r.innerHTML=`<input class="sid" placeholder="Extra ID"><button class="remove" on
 scene.appendChild(r);
 }
 
+function addSiren(){
+const r=document.createElement('div');
+r.className='row';
+r.innerHTML=`<select>${sirenList.map(s=>`<option>${s}</option>`).join('')}</select>
+<button class="remove" onclick="this.parentNode.remove()">X</button>`;
+sirens.appendChild(r);
+}
+
 function addEnv(){
 const r=document.createElement('div');
 r.className='card';
@@ -129,13 +160,12 @@ r.innerHTML=`
 <label>Color<input type="color" class="color"></label>
 <label>Range<input class="range"></label>
 <label>Intensity<input class="intensity"></label>
-<button class="remove" onclick="this.parentNode.remove()">X</button>
-`;
+<button class="remove" onclick="this.parentNode.remove()">X</button>`;
 env.appendChild(r);
 }
 
 function vec3(v){
-if(!v) return null;
+if(!v) return `{ x=0.0, y=0.0, z=0.0 }`;
 v=v.replace(/vector3|\(|\)/gi,'');
 const a=v.split(',').map(e=>e.trim());
 return `{ x=${a[0]}, y=${a[1]}, z=${a[2]} }`;
@@ -144,9 +174,9 @@ return `{ x=${a[0]}, y=${a[1]}, z=${a[2]} }`;
 function buildExtras(c){
 let o=[];
 [...c.children].forEach(r=>{
-const id=r.querySelector('.id').value;
+const id=r.querySelector('.id')?.value;
 const sel=r.querySelector('select');
-if(!id||!sel)return;
+if(!id||!sel) return;
 const p=[...sel.selectedOptions].map(o=>`"${o.value}"`);
 o.push(p.length>1?`        [${id}] = {${p.join(', ')}},`:`        [${id}] = ${p[0]},`);
 });
@@ -173,8 +203,19 @@ ${buildExtras(rear)}
     },
 
     sceneExtras = {
-${[...scene.children].map(r=>`        [${r.querySelector('.sid').value}] = true,`).join("\n")}
+${[...scene.children].map(r=>r.querySelector('.sid')?.value?`        [${r.querySelector('.sid').value}] = true,`:'').join('\n')}
     },
+
+    wmTones = {
+${[...sirens.children].map((r,i)=>`        [${i+1}] = "${r.querySelector('select').value}"`).join(',\n')}
+    },
+
+    sirenOffset = ${vec3(sOffset.value)},
+    sirenDirectional = ${sdir.value},
+    sirenQuietZone = "${squiet.value}",
+    sirenRange = ${srange.value},
+    allowTrafficClear = ${traffic.value},
+    hasMegaphone = ${mega.value},
 
     envLights = {
 ${[...env.children].map(e=>{
