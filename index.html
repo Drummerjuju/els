@@ -196,6 +196,7 @@ const intensity = parseFloat(r.querySelector('input.intensity')?.value) || 2.5;
 
 return `{
     type = "${type}",
+    dir = "${dir}",
     rotation = { x = ${rot.x}, y = ${rot.y}, z = ${rot.z} },
     offset = { x = ${off.x}, y = ${off.y}, z = ${off.z} },
     color = { r = ${parseInt(hex.substr(1,2),16)}, g = ${parseInt(hex.substr(3,2),16)}, b = ${parseInt(hex.substr(5,2),16)} },
