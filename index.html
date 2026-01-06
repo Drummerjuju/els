@@ -24,6 +24,7 @@ button{font-weight:600;cursor:pointer}
 .add{background:#22c55e;color:#022c22}
 .remove{background:#dc2626}
 h3{margin:0 0 6px 0}
+.small{font-size:11px;opacity:.7}
 </style>
 </head>
 
@@ -70,25 +71,23 @@ h3{margin:0 0 6px 0}
 
 <!-- MATRIX -->
 <div class="panel">
-
 <div class="card">
-<h3>Matrix Modus 0 (Standard)</h3>
+<h3>Matrix Modus 0</h3>
 <div id="matrix0"></div>
 <button class="add" onclick="addExtra(matrix0)">+ Matrix Extra</button>
 </div>
 
 <div class="card">
-<h3>Matrix Modus 1 (NUM2)</h3>
+<h3>Matrix Modus 1</h3>
 <div id="matrix1"></div>
 <button class="add" onclick="addExtra(matrix1)">+ Matrix Extra</button>
 </div>
 
 <div class="card">
-<h3>Matrix Modus 2 (NUM2)</h3>
+<h3>Matrix Modus 2</h3>
 <div id="matrix2"></div>
 <button class="add" onclick="addExtra(matrix2)">+ Matrix Extra</button>
 </div>
-
 </div>
 
 <!-- Sirenen -->
@@ -96,13 +95,8 @@ h3{margin:0 0 6px 0}
 <div id="sirens"></div>
 <button class="add" onclick="addSiren()">+ Sirene</button>
 
-<label>Offset</label>
-<div class="row">
-<input id="sx" value="0.0">
-<input id="sy" value="3.5">
-<input id="sz" value="0.5">
-</div>
-
+<label>Offset (Vector3)<span class="small">z.B. vector3(0.0, 3.5, 0.5)</span></label>
+<input id="sOffset" value="vector3(0.0,3.5,0.5)">
 <label>Directional<select id="sdir"><option>true</option><option>false</option></select></label>
 <label>Quiet Zone<select id="squiet"><option>back</option><option>front</option><option>left</option><option>right</option></select></label>
 <label>Range<input id="srange" value="500.0"></label>
@@ -110,7 +104,7 @@ h3{margin:0 0 6px 0}
 <label>Megaphone<select id="mega"><option>true</option><option>false</option></select></label>
 </div>
 
-<!-- EnvLights -->
+<!-- ENV LIGHTS -->
 <div class="panel">
 <div id="env"></div>
 <button class="add" onclick="addEnvGroup()">+ Env Extra</button>
@@ -122,21 +116,8 @@ h3{margin:0 0 6px 0}
 </div>
 
 <script>
-const patterns=[
-"rapid","steady","single",
-"double","double_inv",
-"wigwag_a","wigwag_b",
-"v47_double_A","v47_double_B","v47_double_C",
-"matrix","matrix_inv",
-"tree","tree_inv",
-"heck_hyper","heck_rapid","heck_aggro_a","heck_aggro_b"
-];
-
-const sirenList=[
-"SIREN_echo","SIREN_CHARLIE","SIREN_ALPHA",
-"SIREN_BRAVO","SIREN_DELTA","SIREN_FOXTROT",
-"SIREN_GOLF","SIREN_HOTEL"
-];
+const patterns=["rapid","steady","single","double","double_inv","matrix","matrix_inv"];
+const sirenList=["SIREN_echo","SIREN_CHARLIE","SIREN_ALPHA"];
 
 function tab(i){
 document.querySelectorAll('.tab').forEach((t,n)=>t.classList.toggle('active',n===i));
@@ -161,6 +142,71 @@ r.innerHTML=`<select>${sirenList.map(s=>`<option>${s}</option>`).join('')}</sele
 sirens.appendChild(r);
 }
 
+/* ================= EnvLights mit vector3 ================= */
+function addEnvGroup(){
+const g=document.createElement('div');
+g.className='card';
+g.innerHTML=`
+<label>Extra ID<input class="eid"></label>
+<div class="elist"></div>
+<button class="add">+ EnvLight</button>`;
+g.querySelector('.add').onclick=()=>addEnv(g.querySelector('.elist'));
+env.appendChild(g);
+}
+
+function addEnv(c){
+const r=document.createElement('div');
+r.className='row';
+r.innerHTML=`
+<input class="type" placeholder="type" value="point">
+<input class="rot" placeholder="rotation vector3" value="vector3(0.0,0.0,0.0)">
+<input class="off" placeholder="offset vector3" value="vector3(1.15,1.65,2.15)">
+<input class="color" type="color" value="#0000ff">
+<input class="range" placeholder="range" value="25.0">
+<input class="intensity" placeholder="intensity" value="2.5">
+<button class="remove" onclick="this.parentNode.remove()">X</button>
+`;
+c.appendChild(r);
+}
+
+function parseVector3(str){
+const m = str.match(/vector3\s*\(\s*([-\d.]+)\s*,\s*([-\d.]+)\s*,\s*([-\d.]+)\s*\)/i);
+if(!m) return {x:0, y:0, z:0};
+return {x:parseFloat(m[1]), y:parseFloat(m[2]), z:parseFloat(m[3])};
+}
+
+function buildEnvLights(){
+let out=[];
+[...env.children].forEach(g=>{
+const eid=g.querySelector('.eid')?.value;
+if(!eid) return;
+
+const rows=[...g.querySelectorAll('.row')];
+if(!rows.length) return;
+
+let lights=rows.map(r=>{
+const type = r.querySelector('input.type')?.value || "point";
+const rot = parseVector3(r.querySelector('input.rot')?.value || "vector3(0,0,0)");
+const off = parseVector3(r.querySelector('input.off')?.value || "vector3(0,0,0)");
+const hex = r.querySelector('input.color')?.value || "#0000ff";
+const range = parseFloat(r.querySelector('input.range')?.value) || 25;
+const intensity = parseFloat(r.querySelector('input.intensity')?.value) || 2.5;
+
+return `{
+    type = "${type}",
+    rotation = { x = ${rot.x}, y = ${rot.y}, z = ${rot.z} },
+    offset = { x = ${off.x}, y = ${off.y}, z = ${off.z} },
+    color = { r = ${parseInt(hex.substr(1,2),16)}, g = ${parseInt(hex.substr(3,2),16)}, b = ${parseInt(hex.substr(5,2),16)} },
+    range = ${range},
+    intensity = ${intensity}
+}`;
+});
+
+out.push(`        [${eid}] = {\n${lights.join(',\n')}\n        },`);
+});
+return out.join("\n");
+}
+
 function buildExtras(c){
 let o=[];
 [...c.children].forEach(r=>{
@@ -174,6 +220,7 @@ return o.join("\n");
 }
 
 function generate(){
+const sirOffset = parseVector3(sOffset.value);
 out.value=
 `ELSPro.Vehicles[GetHashKey("${vehicle.value}")] = {
 
@@ -208,12 +255,16 @@ ${buildExtras(matrix2)}
 ${[...sirens.children].map((r,i)=>`        [${i+1}] = "${r.querySelector('select').value}"`).join(',\n')}
     },
 
-    sirenOffset      = { x=${sx.value}, y=${sy.value}, z=${sz.value} },
+    sirenOffset = { x=${sirOffset.x}, y=${sirOffset.y}, z=${sirOffset.z} },
     sirenDirectional = ${sdir.value},
-    sirenQuietZone   = "${squiet.value}",
-    sirenRange       = ${srange.value},
+    sirenQuietZone = "${squiet.value}",
+    sirenRange = ${srange.value},
     allowTrafficClear = ${traffic.value},
-    hasMegaphone      = ${mega.value}
+    hasMegaphone = ${mega.value},
+
+    envLights = {
+${buildEnvLights()}
+    }
 }`;
 }
 </script>
