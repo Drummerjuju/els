@@ -233,7 +233,7 @@ ${buildExtras(rear)}
 
     sceneExtras = {
 ${[...scene.children].map(r=>r.querySelector('.sid')?.value?
-`        {${r.querySelector('.sid').value}},`:'').join('\n')}
+`        ${r.querySelector('.sid').value},`:'').join('\n')}
     },
 
     wmTones = {
